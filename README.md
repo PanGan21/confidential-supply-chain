@@ -70,7 +70,7 @@ For detailed instructions see:
 ```
 fhevm-hardhat-template/
 ├── contracts/           # Smart contract source files
-│   └── FHECounter.sol   # Example FHE counter contract
+│   └── ConfidentialSupplyChain.sol   # Confidential supply chain reporting contract
 ├── deploy/              # Deployment scripts
 ├── tasks/               # Hardhat custom tasks
 ├── test/                # Test files

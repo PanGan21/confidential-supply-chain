@@ -10,7 +10,6 @@ import { vars } from "hardhat/config";
 import "solidity-coverage";
 
 import "./tasks/accounts";
-import "./tasks/FHECounter";
 
 // Run 'npx hardhat vars setup' to see the list of variables that need to be set
 
@@ -23,9 +22,8 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   etherscan: {
-    apiKey: {
-      sepolia: vars.get("ETHERSCAN_API_KEY", ""),
-    },
+    // Etherscan API v2 uses a single key (not per-network keys)
+    apiKey: vars.get("ETHERSCAN_API_KEY", ""),
   },
   gasReporter: {
     currency: "USD",

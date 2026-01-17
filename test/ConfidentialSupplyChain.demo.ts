@@ -1,7 +1,7 @@
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { ethers, fhevm } from "hardhat";
+import { ethers, fhevm, upgrades } from "hardhat";
 import { FhevmType } from "@fhevm/hardhat-plugin";
 
 import { ConfidentialSupplyChain, ConfidentialSupplyChain__factory } from "../types";
@@ -17,7 +17,9 @@ type Signers = {
 
 async function deployFixture() {
   const factory = (await ethers.getContractFactory("ConfidentialSupplyChain")) as ConfidentialSupplyChain__factory;
-  const contract = (await factory.deploy(3600)) as ConfidentialSupplyChain; // 1-hour reporting periods
+  const proxy = await upgrades.deployProxy(factory, [3600], { kind: "uups", initializer: "initialize" });
+  await proxy.waitForDeployment();
+  const contract = proxy as unknown as ConfidentialSupplyChain;
   const contractAddress = await contract.getAddress();
   return { contract, contractAddress };
 }

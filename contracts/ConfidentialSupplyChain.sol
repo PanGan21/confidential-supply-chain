@@ -2,17 +2,18 @@
 pragma solidity ^0.8.24;
 
 import {FHE, ebool, euint32, externalEuint32} from "@fhevm/solidity/lib/FHE.sol";
-import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ZamaConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /// @title ConfidentialSupplyChain
-/// @author Panagiotis Ganelis
+/// @author Panagiotis Ganelis - PanGan21
 /// @notice Tracks shipments and per-period mass-balance reports with encrypted values (FHEVM).
-/// @dev This contract computes encrypted verification flags (ebool). It does NOT revert on mismatches
-///      because encrypted booleans cannot be used directly in Solidity `require`.
-contract ConfidentialSupplyChain is ZamaEthereumConfig, Ownable {
+/// @dev This contract computes encrypted verification flags (ebool).
+contract ConfidentialSupplyChain is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     /// @notice Duration (in seconds) of a reporting period.
-    uint64 public immutable PERIOD_DURATION;
+    uint64 public periodDuration;
 
     /// @notice Whether an address is an approved supply-chain company (can create/report).
     mapping(address company => bool allowed) public isCompany;
@@ -93,11 +94,32 @@ contract ConfidentialSupplyChain is ZamaEthereumConfig, Ownable {
     error CompanyNotAllowed();
     error AuditorNotAllowed();
 
-    /// @notice Creates a supply-chain confidentiality reporter.
+    /// @notice Disables initializer on the implementation contract.
+    /// @dev Prevents someone from calling `initialize` on the implementation directly.
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    /// @notice Initializes the proxy.
     /// @param _periodDuration Duration (in seconds) of a reporting period.
-    constructor(uint64 _periodDuration) Ownable(msg.sender) {
+    function initialize(uint64 _periodDuration) external initializer {
         if (_periodDuration == 0) revert InvalidPeriodDuration();
-        PERIOD_DURATION = _periodDuration;
+
+        // Initialize OZ upgradeable modules
+        __Ownable_init(msg.sender);
+        __UUPSUpgradeable_init();
+
+        // Initialize FHEVM coprocessor config in the proxy storage
+        FHE.setCoprocessor(ZamaConfig.getEthereumCoprocessorConfig());
+
+        periodDuration = _periodDuration;
+    }
+
+    /// @notice Returns the current confidential protocol id for the active chain.
+    /// @return protocolId The confidential protocol id.
+    function confidentialProtocolId() public view returns (uint256) {
+        return ZamaConfig.getConfidentialProtocolId();
     }
 
     /// @notice Restricts a function to approved companies.
@@ -127,7 +149,7 @@ contract ConfidentialSupplyChain is ZamaEthereumConfig, Ownable {
     /// @notice Returns the current reporting period index.
     /// @return period The current period.
     function currentPeriod() public view returns (uint256) {
-        return block.timestamp / PERIOD_DURATION;
+        return block.timestamp / periodDuration;
     }
 
     /// @notice Creates a new shipment in the current period.
@@ -381,6 +403,12 @@ contract ConfidentialSupplyChain is ZamaEthereumConfig, Ownable {
         if (!isAuditor[auditor]) revert AuditorNotAllowed();
     }
 
+    /// @notice Contract version for upgrade demonstrations.
+    /// @return v The contract version.
+    function version() external pure returns (uint256 v) {
+        return 1;
+    }
+
     /// @notice Reverts unless `msg.sender` is one of the shipment participants.
     /// @param s Shipment storage reference.
     function _requireShipmentParticipant(Shipment storage s) internal view {
@@ -398,5 +426,12 @@ contract ConfidentialSupplyChain is ZamaEthereumConfig, Ownable {
         if (s.lossSet) FHE.allow(s.transportLoss, auditor);
         if (s.receivedSet) FHE.allow(s.received, auditor);
         if (FHE.isInitialized(s.verified)) FHE.allow(s.verified, auditor);
+    }
+
+    /// @notice UUPS authorization hook. Only the owner can upgrade.
+    /// @param newImplementation The new implementation address.
+    function _authorizeUpgrade(address newImplementation) internal view override onlyOwner {
+        // silence unused var warning
+        newImplementation;
     }
 }

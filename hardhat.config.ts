@@ -2,6 +2,7 @@ import "@fhevm/hardhat-plugin";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-verify";
+import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
@@ -10,6 +11,7 @@ import { vars } from "hardhat/config";
 import "solidity-coverage";
 
 import "./tasks/accounts";
+import "./tasks/ConfidentialSupplyChain";
 
 // Run 'npx hardhat vars setup' to see the list of variables that need to be set
 

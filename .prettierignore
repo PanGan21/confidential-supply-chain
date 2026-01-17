@@ -5,6 +5,7 @@ fhevmTemp
 .coverage_artifacts
 .coverage_cache
 .coverage_contracts
+.openzeppelin
 artifacts
 build
 cache

@@ -73,10 +73,16 @@ fhevm-hardhat-template/
 │   └── ConfidentialSupplyChain.sol   # Confidential supply chain reporting contract
 ├── deploy/              # Deployment scripts
 ├── tasks/               # Hardhat custom tasks
+├── scripts/             # Sepolia scripts (report + decrypt)
+│   └── sepolia/         # Step-by-step flows against deployed Sepolia contract
 ├── test/                # Test files
 ├── hardhat.config.ts    # Hardhat configuration
 └── package.json         # Dependencies and scripts
 ```
+
+## Sepolia scripts (report + decrypt)
+
+See `docs/sepolia-scripts.md` for copy/paste commands.
 
 ## 📜 Available Scripts
 

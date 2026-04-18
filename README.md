@@ -1,8 +1,11 @@
 # Confidential Supply Chain
 
-A Hardhat-based project implementing a **confidential supply chain management system** using Zama's [FHEVM](https://docs.zama.ai/fhevm) (Fully Homomorphic Encryption Virtual Machine). Shipment values and mass-balance reports stay encrypted on-chain; participants decrypt only their own data, and auditors receive selective access.
+A Hardhat-based project implementing a **confidential supply chain management system** using Zama's
+[FHEVM](https://docs.zama.ai/fhevm) (Fully Homomorphic Encryption Virtual Machine). Shipment values and mass-balance
+reports stay encrypted on-chain; participants decrypt only their own data, and auditors receive selective access.
 
-> **Disclaimer:** This is a personal, educational project and is not an official Zama product or endorsed by Zama in any way. It is intended for learning and experimentation purposes only.
+> **Disclaimer:** This is a personal, educational project and is not an official Zama product or endorsed by Zama in any
+> way. It is intended for learning and experimentation purposes only.
 
 ---
 
@@ -23,13 +26,13 @@ The contract is deployed as a **UUPS upgradeable proxy** on the Sepolia testnet.
 
 ### Roles
 
-| Role | Responsibilities |
-|------|-----------------|
-| **Owner** | Manages company and auditor allowlists; can upgrade the contract |
-| **Company (Sender)** | Creates shipments; encrypts and reports the sent amount |
-| **Company (Transporter)** | Encrypts and reports transport loss for a shipment |
-| **Company (Receiver)** | Encrypts and reports the received amount; submits mass-balance reports |
-| **Auditor** | Granted selective decrypt access by participants; reads encrypted values |
+| Role                      | Responsibilities                                                         |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Owner**                 | Manages company and auditor allowlists; can upgrade the contract         |
+| **Company (Sender)**      | Creates shipments; encrypts and reports the sent amount                  |
+| **Company (Transporter)** | Encrypts and reports transport loss for a shipment                       |
+| **Company (Receiver)**    | Encrypts and reports the received amount; submits mass-balance reports   |
+| **Auditor**               | Granted selective decrypt access by participants; reads encrypted values |
 
 ### Shipment Flow
 
@@ -47,11 +50,13 @@ Sender          Transporter        Receiver
   └──────────── verified flag computed on-chain (encrypted) ────────────────►
 ```
 
-Once all three values are reported, the contract computes an encrypted `verified` flag: `received == sent − transportLoss`.
+Once all three values are reported, the contract computes an encrypted `verified` flag:
+`received == sent − transportLoss`.
 
 ### Mass-Balance Flow
 
-A company calls `reportMassBalanceForPeriod(period, totalIn, totalOut, processLoss)`. The contract stores the values encrypted and computes `balanced = (totalIn == totalOut + processLoss)` without revealing the amounts.
+A company calls `reportMassBalanceForPeriod(period, totalIn, totalOut, processLoss)`. The contract stores the values
+encrypted and computes `balanced = (totalIn == totalOut + processLoss)` without revealing the amounts.
 
 ---
 
@@ -61,19 +66,19 @@ A company calls `reportMassBalanceForPeriod(period, totalIn, totalOut, processLo
 
 ### Key Functions
 
-| Function | Caller | Description |
-|----------|--------|-------------|
-| `initialize(periodDuration)` | Owner (deploy) | Sets period duration; initializes FHEVM |
-| `setCompany(address, bool)` | Owner | Add/remove a company from the allowlist |
-| `setAuditor(address, bool)` | Owner | Add/remove an auditor from the allowlist |
-| `createShipment(transporter, receiver)` | Company | Creates a new shipment; returns `shipmentId` |
-| `reportSent(shipmentId, encValue, proof)` | Sender | Reports encrypted sent amount |
-| `reportTransportLoss(shipmentId, encValue, proof)` | Transporter | Reports encrypted transport loss |
-| `reportReceived(shipmentId, encValue, proof)` | Receiver | Reports encrypted received amount |
-| `allowAuditorForShipment(shipmentId, auditor)` | Participant | Grants auditor decryption access |
-| `reportMassBalanceForPeriod(period, in, out, loss, proof)` | Company | Reports encrypted mass balance for a period |
-| `allowAuditorForReport(period, auditor)` | Company | Grants auditor access to a report |
-| `currentPeriod()` | Anyone | Returns current period (`block.timestamp / periodDuration`) |
+| Function                                                   | Caller         | Description                                                 |
+| ---------------------------------------------------------- | -------------- | ----------------------------------------------------------- |
+| `initialize(periodDuration)`                               | Owner (deploy) | Sets period duration; initializes FHEVM                     |
+| `setCompany(address, bool)`                                | Owner          | Add/remove a company from the allowlist                     |
+| `setAuditor(address, bool)`                                | Owner          | Add/remove an auditor from the allowlist                    |
+| `createShipment(transporter, receiver)`                    | Company        | Creates a new shipment; returns `shipmentId`                |
+| `reportSent(shipmentId, encValue, proof)`                  | Sender         | Reports encrypted sent amount                               |
+| `reportTransportLoss(shipmentId, encValue, proof)`         | Transporter    | Reports encrypted transport loss                            |
+| `reportReceived(shipmentId, encValue, proof)`              | Receiver       | Reports encrypted received amount                           |
+| `allowAuditorForShipment(shipmentId, auditor)`             | Participant    | Grants auditor decryption access                            |
+| `reportMassBalanceForPeriod(period, in, out, loss, proof)` | Company        | Reports encrypted mass balance for a period                 |
+| `allowAuditorForReport(period, auditor)`                   | Company        | Grants auditor access to a report                           |
+| `currentPeriod()`                                          | Anyone         | Returns current period (`block.timestamp / periodDuration`) |
 
 ### Events
 
@@ -214,13 +219,13 @@ npx ts-node scripts/sepolia/auditorShipment.ts --contract $CSC_PROXY_ADDRESS --s
 
 ## Available npm Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run compile` | Compile contracts and generate TypeChain types |
-| `npm run test` | Run all tests against local FHEVM mock |
-| `npm run coverage` | Generate Solidity coverage report |
-| `npm run lint` | Run ESLint + Solhint |
-| `npm run clean` | Remove build artifacts |
+| Script             | Description                                    |
+| ------------------ | ---------------------------------------------- |
+| `npm run compile`  | Compile contracts and generate TypeChain types |
+| `npm run test`     | Run all tests against local FHEVM mock         |
+| `npm run coverage` | Generate Solidity coverage report              |
+| `npm run lint`     | Run ESLint + Solhint                           |
+| `npm run clean`    | Remove build artifacts                         |
 
 ---
 

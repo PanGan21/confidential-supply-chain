@@ -154,10 +154,23 @@ This script decrypts using the company wallet selected via `COMPANY_ROLE` (e.g. 
 - `balanced`
 - `totalIn`, `totalOut`, `processLoss`
 
+Note: in this flow the mass-balance report is always the **receiver’s** report (because `reportMassBalance.ts` always
+submits from the receiver wallet). So:
+
+- `COMPANY_ROLE=receiver` should succeed
+- `COMPANY_ROLE=sender` should show an authorization error (no access)
+
 Command:
 
 ```bash
 COMPANY_ROLE=receiver npx hardhat run --network sepolia scripts/sepolia/decryptMassBalance.ts
+```
+
+Negative case (expected failure): try decrypting the receiver’s report as another company (e.g. sender). This should
+fail with “not authorized to user decrypt handle …”.
+
+```bash
+COMPANY_ROLE=sender npx hardhat run --network sepolia scripts/sepolia/decryptMassBalance.ts
 ```
 
 ### 10) Auditor: grant access + decrypt mass-balance
@@ -184,6 +197,13 @@ REPORTING_COMPANY_ROLE=receiver npx hardhat run --network sepolia scripts/sepoli
 ```
 
 Step 2: decrypt (auditor):
+
+```bash
+REPORTING_COMPANY_ROLE=receiver npx hardhat run --network sepolia scripts/sepolia/decryptMassBalanceAsAuditor.ts
+```
+
+Negative case (expected failure): try decrypting as auditor **before** running the grant script. This should fail with
+“not authorized to user decrypt handle …” (because the company hasn’t granted access yet).
 
 ```bash
 REPORTING_COMPANY_ROLE=receiver npx hardhat run --network sepolia scripts/sepolia/decryptMassBalanceAsAuditor.ts
